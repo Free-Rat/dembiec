@@ -24,6 +24,7 @@
 			mpi
             bash
             gpp
+			lldb
             gcc
             clang-tools_17
             git
