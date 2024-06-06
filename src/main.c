@@ -37,8 +37,23 @@ int main(int argc, char **argv)
             }
         }
 
-        packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
-        handlePacket(packet);
+		int number_amount;
+		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		MPI_Get_count(&status, MPI_PACKET_T, &number_amount);
+
+		for (int i = 0; i < number_amount; i++) {
+			packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
+			handlePacket(packet);
+		}
+
+		// do {
+		// 	MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		// 	MPI_Get_count(&status, MPI_PACKET_T, &number_amount);
+		// 	if (number_amount > 0) {
+		// 		packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
+		// 		handlePacket(packet);
+		// 	}
+		// } while (number_amount > 0);
     }
 
     //while (1)
