@@ -145,12 +145,22 @@ packet_t *getMessage(int from, MPI_Status* status)
     return packet;
 }
 
+void team_merge(int* rec_team) {
+	int* new_team = merge(team, rec_team);
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		team[i] = new_team[i];
+	}
+
+	free(new_team);
+}
+
 void handlePacket(packet_t* packet) {
     switch (packet->type) {
         case REQUEST:
             println("Otrzymałem prośbę od %d", packet->src_rank);
 			if (!in_dembiec) {
 				if (is_leader) {
+					team_merge(packet->team);
 					sendPacket(getp_ans(OK), packet->src_rank, ANSWER);
 				}
 				else {
