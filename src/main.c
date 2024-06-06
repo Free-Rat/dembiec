@@ -10,7 +10,7 @@ int team_size = 1;
 void get_next_query() {
     next_query++;
     if (next_query == size) {
-        next_query = rank;
+        next_query = rank + 1;
     }
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     team[0] = rank;
 
     while (1) {
-        if (is_leader) {
+        if (is_leader && rank != size - 1) {
             get_next_query();
             sendPacket(getp_req(), next_query, REQUEST);
         }

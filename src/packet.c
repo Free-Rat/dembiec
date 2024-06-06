@@ -135,8 +135,8 @@ void wypisz(int* tab) {
 
 packet_t *getMessage(int from, MPI_Status* status)
 {
-    packet_t* packet = malloc(sizeof(packet_t));
-    MPI_Recv(&packet, 1, MPI_PACKET_T, from, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+    packet_t* packet = (packet_t*)malloc(sizeof(packet_t));
+    MPI_Recv(packet, 1, MPI_PACKET_T, from, MPI_ANY_TAG, MPI_COMM_WORLD, status);
 
     return packet;
 }
