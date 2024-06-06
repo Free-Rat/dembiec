@@ -58,7 +58,7 @@ void sendPacket(packet_t *pkt, int destination, int tag)
 // ======================================================================
 
 int* merge(int* group1, int* group2) {
-	int* result = (int*)malloc(size * sizeof(int));
+	int* result = (int*)malloc(TEAM_SIZE * sizeof(int));
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -76,7 +76,7 @@ int* merge(int* group1, int* group2) {
 		result[k] = group1[i];
 		i++;
 		k++;
-		if (i == size) {
+		if (i == TEAM_SIZE) {
 			break;
 		}
 	}
@@ -84,7 +84,7 @@ int* merge(int* group1, int* group2) {
 		result[k] = group2[j];
 		j++;
 		k++;
-		if (j == size) {
+		if (j == TEAM_SIZE) {
 			break;
 		}
 	}
@@ -100,8 +100,8 @@ void swap(int* a, int* b) {
 void sort(int* tab) {
 	// -1 on the end
 	// from 0 to inf from the beginning
-	for (int i = 0; i < size; i++) {
-		for (int j = size - 1; j > i; j--) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		for (int j = TEAM_SIZE - 1; j > i; j--) {
 			if (tab[i] < 0 && tab[j] >= 0) {
 				swap(&tab[i], &tab[j]);
 			} else if (tab[j] < tab[i] && tab[j] >= 0 && tab[i] >= 0) {
@@ -112,29 +112,17 @@ void sort(int* tab) {
 }
 
 int* trim(int* g1, int len_g1, int len_g2) {
-	if (len_g1 + len_g2 < size) {
+	if (len_g1 + len_g2 < TEAM_SIZE) {
 		return g1;
 	}
-	int* wynik = (int*)malloc(size * sizeof(int));
-	for (int i = 0; i < size - len_g2; i++) {
+	int* wynik = (int*)malloc(TEAM_SIZE * sizeof(int));
+	for (int i = 0; i < TEAM_SIZE - len_g2; i++) {
 		wynik[i] = g1[i];
 	}
-	for (int i = size - len_g2; i < size; i++) {
+	for (int i = TEAM_SIZE - len_g2; i < TEAM_SIZE; i++) {
 		wynik[i] = -1;
 	}
 	return wynik;
-}
-
-void wypisz(int* tab) {
-	// int i = 0;
-	// while (tab[i] != -1) {
-	// 	printf("%d ", tab[i]);
-	// 	i++;
-	// }
-	for (int i = 0; i < size; i++) {
-		printf("%d ", tab[i]);
-	}
-	printf("\n");
 }
 
 packet_t *getMessage(int from, MPI_Status* status)
