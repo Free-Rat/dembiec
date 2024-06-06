@@ -6,11 +6,7 @@ struct tagNames_t{
     const char *name;
     int tag;
 } tagNames[] = { 
-    { "pakiet aplikacyjny", APP_PKT }, 
-    { "finish", FINISH }, 
-    { "potwierdzenie", ACK }, 
     { "prośbę o sekcję krytyczną", REQUEST }, 
-    { "zwolnienie sekcji krytycznej", RELEASE }
 };
 
 const char *const tag2string( int tag )
@@ -50,4 +46,25 @@ void sendPacket(packet_t *pkt, int destination, int tag)
     debug("Wysyłam %s do %d\n", tag2string(tag), destination);
     if (freepkt) 
         free(pkt);
+}
+
+packet_t *getMessage(int from, MPI_Status* status)
+{
+    packet_t* packet = malloc(sizeof(packet_t));
+    MPI_Recv(&packet, 1, MPI_PACKET_T, from, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+
+    return packet;
+}
+
+
+void handlePacket(packet_t* packet) {
+    switch (packet->type) {
+        case REQUEST:
+            println("Otrzymałem prośbę o sekcję krytyczną od %d", packet->src_rank);
+            break;
+        default:
+            break;
+    }
+
+    free(packet);
 }

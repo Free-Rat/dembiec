@@ -1,7 +1,7 @@
 #ifndef PACKETH
 #define PACKETH
-#include "main.h"
 #include "globals.h"
+#include <mpi.h>
 
 /* typ pakietu */
 typedef struct {
@@ -16,6 +16,10 @@ void packet_init();
 
 /* wysyłanie pakietu, skrót: wskaźnik do pakietu (0 oznacza stwórz pusty pakiet), do kogo, z jakim typem */
 void sendPacket(packet_t *pkt, int destination, int tag);
+
+packet_t* getMessage(int from, MPI_Status* status);
+
+void handlePacket(packet_t* packet);
 
 typedef enum {InRun, InMonitor, InWant, InSection, InFinish} state_t;
 /* zmiana stanu, obwarowana muteksem */

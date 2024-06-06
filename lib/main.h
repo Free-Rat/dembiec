@@ -18,8 +18,11 @@
 #define ROOT 0
 
 /* tutaj TYLKO zapowiedzi - definicje w main.c */
-extern int rank;
-extern int size;
+extern int rank, size;
+extern int next_query;
+extern int is_leader;
+extern int team[TEAM_SIZE];
+extern int team_size;
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano

@@ -4,6 +4,7 @@
         "mpi.h": "c",
         "stdio.h": "c",
         "main.h": "c",
-        "watek_glowny.h": "c"
+        "watek_glowny.h": "c",
+        "queries.h": "c"
     }
 }
