@@ -1,0 +1,9 @@
+{
+    "C_Cpp.default.compilerPath": "/nix/store/yzc5kxkb8mi13p9nzws9q6ff0q5vb19s-openmpi-4.1.6-dev/bin/mpicc",
+    "files.associations": {
+        "mpi.h": "c",
+        "stdio.h": "c",
+        "main.h": "c",
+        "watek_glowny.h": "c"
+    }
+}
