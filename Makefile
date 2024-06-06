@@ -13,5 +13,5 @@ clear: clean
 clean:
 	rm main a.out
 
-run: main Makefile tags
-	mpirun -oversubscribe -np 8 ./main
+run: main Makefile
+	mpirun -oversubscribe -np 8 ./build/main

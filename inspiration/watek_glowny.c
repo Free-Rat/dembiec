@@ -1,5 +1,5 @@
 #include "../lib/main.h"
-#include "../lib/watek_glowny.h"
+#include "watek_glowny.h"
 
 void mainLoop()
 {
