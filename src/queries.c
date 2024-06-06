@@ -37,4 +37,6 @@ packet_t* getp_update() {
     packet->team_size = team_size;
     packet->src_rank = rank;
     packet->leader_rank = leader;
+
+    return packet;
 }

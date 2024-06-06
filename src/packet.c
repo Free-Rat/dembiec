@@ -39,16 +39,10 @@ void packet_init()
 
 void sendPacket(packet_t *pkt, int destination, int tag, int free_here)
 {
-    int freepkt=0;
-    if (pkt == 0) { 
-        pkt = malloc(sizeof(packet_t)); 
-        freepkt=1;
-    }
-
     pkt->src_rank = rank;
     MPI_Send(pkt, 1, MPI_PACKET_T, destination, tag, MPI_COMM_WORLD);
-    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
-    if (freepkt || free_here) 
+    println("Wysyłam %s do %d\n", tag2string(tag), destination);
+    if (free_here) 
         free(pkt);
 }
 
@@ -149,9 +143,7 @@ void update_leader() {
 
 void team_merge(int* rec_team) {
 	int* new_team = merge(team, rec_team);
-	for (int i = 0; i < TEAM_SIZE; i++) {
-		team[i] = new_team[i];
-	}
+	replace_team(new_team);
 	sort(team);
 	update_leader();
 
