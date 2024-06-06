@@ -1,7 +1,6 @@
 /* w main.h także makra println oraz debug -  z kolorkami! */
 #include "main.h"
-#include "watek_glowny.h"
-#include "watek_komunikacyjny.h"
+#include "util.h"
 
 /*
  * W main.h extern int rank (zapowiedź) w main.c int rank (definicja)
@@ -24,36 +23,8 @@ pthread_t threadKom;
 
 void finalizuj()
 {
-    pthread_mutex_destroy( &stateMut);
     /* Czekamy, aż wątek potomny się zakończy */
-    println("czekam na wątek \"komunikacyjny\"\n" );
-    pthread_join(threadKom,NULL);
-    MPI_Type_free(&MPI_PAKIET_T);
     MPI_Finalize();
-}
-
-void check_thread_support(int provided)
-{
-    printf("THREAD SUPPORT: chcemy %d. Co otrzymamy?\n", provided);
-    switch (provided) {
-        case MPI_THREAD_SINGLE: 
-            printf("Brak wsparcia dla wątków, kończę\n");
-            /* Nie ma co, trzeba wychodzić */
-	    fprintf(stderr, "Brak wystarczającego wsparcia dla wątków - wychodzę!\n");
-	    MPI_Finalize();
-	    exit(-1);
-	    break;
-        case MPI_THREAD_FUNNELED: 
-            printf("tylko te wątki, ktore wykonaly mpi_init_thread mogą wykonać wołania do biblioteki mpi\n");
-	    break;
-        case MPI_THREAD_SERIALIZED: 
-            /* Potrzebne zamki wokół wywołań biblioteki MPI */
-            printf("tylko jeden watek naraz może wykonać wołania do biblioteki MPI\n");
-	    break;
-        case MPI_THREAD_MULTIPLE: printf("Pełne wsparcie dla wątków\n"); /* tego chcemy. Wszystkie inne powodują problemy */
-	    break;
-        default: printf("Nikt nic nie wie\n");
-    }
 }
 
 
@@ -61,8 +32,6 @@ int main(int argc, char **argv)
 {
     MPI_Status status;
     int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-    check_thread_support(provided);
     srand(rank);
     /* zob. util.c oraz util.h */
     inicjuj_typ_pakietu(); // tworzy typ pakietu
@@ -72,7 +41,6 @@ int main(int argc, char **argv)
      * w vi najedź kursorem na nazwę pliku i wciśnij klawisze gf
      * powrót po wciśnięciu ctrl+6
      * */
-    pthread_create( &threadKom, NULL, startKomWatek , 0);
 
     /* mainLoop w watek_glowny.c 
      * w vi najedź kursorem na nazwę pliku i wciśnij klawisze gf
@@ -86,3 +54,88 @@ int main(int argc, char **argv)
     return 0;
 }
 
+void mainLoop()
+{
+    srandom(rank);
+    int tag;
+    int perc;
+
+    while (stan != InFinish) {
+	switch (stan) {
+	    case InRun: 
+		perc = random()%100;
+		if ( perc < 25 ) {
+		    debug("Perc: %d", perc);
+		    println("Ubiegam się o sekcję krytyczną")
+		    debug("Zmieniam stan na wysyłanie");
+		    packet_t *pkt = malloc(sizeof(packet_t));
+		    pkt->data = perc;
+		    ackCount = 0;
+		    for (int i=0;i<=size-1;i++)
+			if (i!=rank)
+			    sendPacket( pkt, i, REQUEST);
+		    changeState( InWant ); // w VI naciśnij ctrl-] na nazwie funkcji, ctrl+^ żeby wrócić
+					   // :w żeby zapisać, jeżeli narzeka że w pliku są zmiany
+					   // ewentualnie wciśnij ctrl+w ] (trzymasz ctrl i potem najpierw w, potem ]
+					   // między okienkami skaczesz ctrl+w i strzałki, albo ctrl+ww
+					   // okienko zamyka się :q
+					   // ZOB. regułę tags: w Makefile (naciśnij gf gdy kursor jest na nazwie pliku)
+		    free(pkt);
+		} // a skoro już jesteśmy przy komendach vi, najedź kursorem na } i wciśnij %  (niestety głupieje przy komentarzach :( )
+		debug("Skończyłem myśleć");
+		break;
+	    case InWant:
+		println("Czekam na wejście do sekcji krytycznej")
+		// tutaj zapewne jakiś semafor albo zmienna warunkowa
+		// bo aktywne czekanie jest BUE
+		if ( ackCount == size - 1) 
+		    changeState(InSection);
+		break;
+	    case InSection:
+		// tutaj zapewne jakiś muteks albo zmienna warunkowa
+		println("Jestem w sekcji krytycznej")
+		    sleep(5);
+		//if ( perc < 25 ) {
+		    debug("Perc: %d", perc);
+		    println("Wychodzę z sekcji krytycznej")
+		    debug("Zmieniam stan na wysyłanie");
+		    packet_t *pkt = malloc(sizeof(packet_t));
+		    pkt->data = perc;
+		    for (int i=0;i<=size-1;i++)
+			if (i!=rank)
+			    sendPacket( pkt, (rank+1)%size, RELEASE);
+		    changeState( InRun );
+		    free(pkt);
+		//}
+		break;
+	    default: 
+		break;
+            }
+        sleep(SEC_IN_STATE);
+    }
+}
+
+void *startKomWatek(void *ptr)
+{
+    MPI_Status status;
+    int is_message = FALSE;
+    packet_t pakiet;
+    /* Obrazuje pętlę odbierającą pakiety o różnych typach */
+    while ( stan!=InFinish ) {
+	debug("czekam na recv");
+        MPI_Recv( &pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+        switch ( status.MPI_TAG ) {
+	    case REQUEST: 
+                debug("Ktoś coś prosi. A niech ma!")
+		sendPacket( 0, status.MPI_SOURCE, ACK );
+	    break;
+	    case ACK: 
+                debug("Dostałem ACK od %d, mam już %d", status.MPI_SOURCE, ackCount);
+	        ackCount++; /* czy potrzeba tutaj muteksa? Będzie wyścig, czy nie będzie? Zastanówcie się. */
+	    break;
+	    default:
+	    break;
+        }
+    }
+}

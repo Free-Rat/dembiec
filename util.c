@@ -60,14 +60,3 @@ void sendPacket(packet_t *pkt, int destination, int tag)
     debug("Wysyłam %s do %d\n", tag2string( tag), destination);
     if (freepkt) free(pkt);
 }
-
-void changeState( state_t newState )
-{
-    pthread_mutex_lock( &stateMut );
-    if (stan==InFinish) { 
-	pthread_mutex_unlock( &stateMut );
-        return;
-    }
-    stan = newState;
-    pthread_mutex_unlock( &stateMut );
-}
