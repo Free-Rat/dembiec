@@ -8,6 +8,7 @@
 /* TYPY PAKIETÓW */
 #define REQUEST 1
 #define ANSWER 2
+#define UPDATE 3
 
 // Możliwe odpowiedzi
 #define OK 1

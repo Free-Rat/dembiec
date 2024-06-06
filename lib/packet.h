@@ -17,7 +17,7 @@ extern MPI_Datatype MPI_PACKET_T;
 void packet_init();
 
 /* wysyłanie pakietu, skrót: wskaźnik do pakietu (0 oznacza stwórz pusty pakiet), do kogo, z jakim typem */
-void sendPacket(packet_t *pkt, int destination, int tag);
+void sendPacket(packet_t *pkt, int destination, int tag, int free_here);
 
 packet_t* getMessage(int from, MPI_Status* status);
 

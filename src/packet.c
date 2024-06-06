@@ -37,7 +37,7 @@ void packet_init()
     MPI_Type_commit(&MPI_PACKET_T);
 }
 
-void sendPacket(packet_t *pkt, int destination, int tag)
+void sendPacket(packet_t *pkt, int destination, int tag, int free_here)
 {
     int freepkt=0;
     if (pkt == 0) { 
@@ -48,10 +48,15 @@ void sendPacket(packet_t *pkt, int destination, int tag)
     pkt->src_rank = rank;
     MPI_Send(pkt, 1, MPI_PACKET_T, destination, tag, MPI_COMM_WORLD);
     debug("Wysyłam %s do %d\n", tag2string(tag), destination);
-    if (freepkt) 
+    if (freepkt || free_here) 
         free(pkt);
 }
 
+void replace_team(int* new_team) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		team[i] = new_team[i];
+	}
+}
 
 // ======================================================================
 // zarządzanie ekipami
@@ -133,13 +138,34 @@ packet_t *getMessage(int from, MPI_Status* status)
     return packet;
 }
 
+void update_leader() {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		if (team[i] != -1) {
+			leader = team[i];
+			break;
+		}
+	}
+}
+
 void team_merge(int* rec_team) {
 	int* new_team = merge(team, rec_team);
 	for (int i = 0; i < TEAM_SIZE; i++) {
 		team[i] = new_team[i];
 	}
+	sort(team);
+	update_leader();
 
 	free(new_team);
+}
+
+void sendTeamPacket(packet_t* packet, int destination, int tag) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		if (team[i] != -1 && team[i] != rank) {
+			sendPacket(packet, team[i], tag, 0);
+		}
+	}
+
+	free(packet);
 }
 
 void handlePacket(packet_t* packet) {
@@ -149,19 +175,38 @@ void handlePacket(packet_t* packet) {
 			if (!in_dembiec) {
 				if (is_leader) {
 					team_merge(packet->team);
-					sendPacket(getp_ans(OK), packet->src_rank, ANSWER);
+					sendPacket(getp_ans(OK), packet->src_rank, ANSWER, 1);
+					sendTeamPacket(getp_update(), packet->src_rank, UPDATE);
 				}
 				else {
-					sendPacket(getp_ans(NOT_LEADER), packet->src_rank, ANSWER);
+					sendPacket(getp_ans(NOT_LEADER), packet->src_rank, ANSWER, 1);
 				}
 			}
 			else {
-				sendPacket(getp_ans(AWAY), packet->src_rank, ANSWER);
+				sendPacket(getp_ans(AWAY), packet->src_rank, ANSWER, 1);
 			}
             break;
 		case ANSWER:
 			println("Otrzymałem odpowiedź od %d", packet->src_rank);
+			switch (packet->answer) {
+				case OK:
+					team_merge(packet->team);
+					println("Połączono z %d", packet->src_rank);
+					break;
+				case NOT_LEADER:
+					next_query = packet->leader_rank - 1;
+					break;
+				case DEAD:
+					dead_list[packet->src_rank] = 1;
+					break;
+			}
 			break;
+
+		case UPDATE:
+			if (packet->src_rank == leader) {
+				replace_team(packet->team);
+				update_leader();
+			}
         default:
             break;
     }

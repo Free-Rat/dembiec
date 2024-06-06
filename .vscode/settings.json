@@ -5,6 +5,7 @@
         "stdio.h": "c",
         "main.h": "c",
         "watek_glowny.h": "c",
-        "queries.h": "c"
+        "queries.h": "c",
+        "packet.h": "c"
     }
 }

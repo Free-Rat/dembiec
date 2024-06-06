@@ -9,12 +9,42 @@ int team[TEAM_SIZE] = {-1};
 int team_size = 1;
 
 int in_dembiec = 0;
+int dead_list[TEAM_SIZE] = {0};
+
+int all_dead = 0;
 
 void get_next_query() {
     next_query++;
+    
     if (next_query == size) {
         next_query = rank + 1;
     }
+}
+
+int try_next() {
+    get_next_query();
+    
+    int checked = 0;
+    while (checked <= size && dead_list[next_query] == 1) {
+        get_next_query();
+        checked++;
+    }
+
+    if (checked <= size) {
+        return 1;
+    }
+    
+    return 0;
+}
+
+int are_all_dead() {
+    for (int i = 0; i < TEAM_SIZE; i++) {
+        if (dead_list[i] == 0) {
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 int main(int argc, char **argv)
@@ -33,8 +63,10 @@ int main(int argc, char **argv)
 
     while (1) {
         if (is_leader && rank != size - 1) {
-            get_next_query();
-            sendPacket(getp_req(), next_query, REQUEST);
+            if (!try_next()) {
+                break;
+            }
+            sendPacket(getp_req(), next_query, REQUEST, 1);
             if (rank != 0) {
                 packet_t* packet = getMessage(next_query, &status);
                 handlePacket(packet);
@@ -49,8 +81,13 @@ int main(int argc, char **argv)
 			packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
 			handlePacket(packet);
 		}
+
+        if (are_all_dead()) {
+            break;
+        }
     }
 
+    println("Wszyscy są martwi, kończę działanie...");
     MPI_Type_free(&MPI_PACKET_T);
     MPI_Finalize();
     return 0;

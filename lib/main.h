@@ -23,8 +23,9 @@ extern int next_query;
 extern int is_leader;
 extern int team[TEAM_SIZE];
 extern int team_size;
-extern int in_dembiec = 0;
+extern int in_dembiec;
 extern int leader;
+extern int dead_list[TEAM_SIZE];
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano
