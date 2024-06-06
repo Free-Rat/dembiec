@@ -5,6 +5,6 @@
 
 packet_t* getp_req();
 
-packet_t* getp_ans();
+packet_t* getp_ans(int answer_type);
 
 #endif

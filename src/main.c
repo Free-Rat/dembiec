@@ -4,8 +4,11 @@
 int rank, size;
 int next_query = 0;
 int is_leader = 1;
+int leader = 0;
 int team[TEAM_SIZE] = {-1};
 int team_size = 1;
+
+int in_dembiec = 0;
 
 void get_next_query() {
     next_query++;
@@ -26,6 +29,7 @@ int main(int argc, char **argv)
 
     next_query = rank;
     team[0] = rank;
+    leader = rank;
 
     while (1) {
         if (is_leader && rank != size - 1) {
@@ -45,27 +49,8 @@ int main(int argc, char **argv)
 			packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
 			handlePacket(packet);
 		}
-
-		// do {
-		// 	MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		// 	MPI_Get_count(&status, MPI_PACKET_T, &number_amount);
-		// 	if (number_amount > 0) {
-		// 		packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
-		// 		handlePacket(packet);
-		// 	}
-		// } while (number_amount > 0);
     }
 
-    //while (1)
-    //println("%d", rank);
-
-    //packet_t packet = {1, {1, 2, 3}, 3, rank};
-    //sendPacket(&packet, rank+1, REQUEST);
-    //MPI_Recv(&packet, 1, MPI_PACKET_T, rank-1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
-    //println("Recived from %d", packet.team[1]);
-    
-    //finalizuj();
     MPI_Type_free(&MPI_PACKET_T);
     MPI_Finalize();
     return 0;

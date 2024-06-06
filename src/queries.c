@@ -18,12 +18,14 @@ packet_t* getp_req() {
     return packet;
 }
 
-packet_t* getp_ans() {
+packet_t* getp_ans(int answer_type) {
     packet_t* packet = (packet_t*)malloc(sizeof(packet_t));
     packet->type = ANSWER;
     fill_team(packet->team);
     packet->team_size = team_size;
     packet->src_rank = rank;
+    packet->answer = answer_type;
+    packet->leader_rank = leader;
 
     return packet;
 }

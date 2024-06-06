@@ -9,6 +9,8 @@ typedef struct {
     int team[TEAM_SIZE];
     int team_size;
     int src_rank;
+    int answer;
+    int leader_rank;
 } packet_t;
 
 extern MPI_Datatype MPI_PACKET_T;

@@ -21,14 +21,16 @@ const char *const tag2string( int tag )
 
 void packet_init()
 {
-    int       blocklengths[PACKET_ITEMS] = {1, TEAM_SIZE, 1, 1};
-    MPI_Datatype types[PACKET_ITEMS] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
+    int       blocklengths[PACKET_ITEMS] = {1, TEAM_SIZE, 1, 1, 1, 1};
+    MPI_Datatype types[PACKET_ITEMS] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT};
 
     MPI_Aint     offsets[PACKET_ITEMS]; 
     offsets[0] = offsetof(packet_t, type);
     offsets[1] = offsetof(packet_t, team);
     offsets[2] = offsetof(packet_t, team_size);
     offsets[3] = offsetof(packet_t, src_rank);
+	offsets[4] = offsetof(packet_t, answer);
+	offsets[5] = offsetof(packet_t, leader_rank);
 
     MPI_Type_create_struct(PACKET_ITEMS, blocklengths, offsets, types, &MPI_PACKET_T);
 
@@ -55,38 +57,38 @@ void sendPacket(packet_t *pkt, int destination, int tag)
 // zarządzanie ekipami
 // ======================================================================
 
-int* scal(int* grupa1, int* grupa2) {
-	int* wynik = (int*)malloc(size * sizeof(int));
+int* merge(int* group1, int* group2) {
+	int* result = (int*)malloc(size * sizeof(int));
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	while (grupa1[i] != -1 && grupa2[j] != -1) {
-		if (grupa1[i] < grupa2[j]) {
-			wynik[k] = grupa1[i];
+	while (group1[i] != -1 && group2[j] != -1) {
+		if (group1[i] < group2[j]) {
+			result[k] = group1[i];
 			i++;
 		} else {
-			wynik[k] = grupa2[j];
+			result[k] = group2[j];
 			j++;
 		}
 		k++;
 	}
-	while (grupa1[i] != -1) {
-		wynik[k] = grupa1[i];
+	while (group1[i] != -1) {
+		result[k] = group1[i];
 		i++;
 		k++;
 		if (i == size) {
 			break;
 		}
 	}
-	while (grupa2[j] != -1) {
-		wynik[k] = grupa2[j];
+	while (group2[j] != -1) {
+		result[k] = group2[j];
 		j++;
 		k++;
 		if (j == size) {
 			break;
 		}
 	}
-	return wynik;
+	return result;
 }
 
 void swap(int* a, int* b) {
@@ -143,12 +145,21 @@ packet_t *getMessage(int from, MPI_Status* status)
     return packet;
 }
 
-
 void handlePacket(packet_t* packet) {
     switch (packet->type) {
         case REQUEST:
             println("Otrzymałem prośbę od %d", packet->src_rank);
-			sendPacket(getp_ans(), packet->src_rank, ANSWER);
+			if (!in_dembiec) {
+				if (is_leader) {
+					sendPacket(getp_ans(OK), packet->src_rank, ANSWER);
+				}
+				else {
+					sendPacket(getp_ans(NOT_LEADER), packet->src_rank, ANSWER);
+				}
+			}
+			else {
+				sendPacket(getp_ans(AWAY), packet->src_rank, ANSWER);
+			}
             break;
 		case ANSWER:
 			println("Otrzymałem odpowiedź od %d", packet->src_rank);
