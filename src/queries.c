@@ -8,10 +8,19 @@ void fill_team(int* packet_team) {
     }
 }
 
-packet_t* getp_req()
-{
+packet_t* getp_req() {
     packet_t* packet = (packet_t*)malloc(sizeof(packet_t));
     packet->type = REQUEST;
+    fill_team(packet->team);
+    packet->team_size = team_size;
+    packet->src_rank = rank;
+
+    return packet;
+}
+
+packet_t* getp_ans() {
+    packet_t* packet = (packet_t*)malloc(sizeof(packet_t));
+    packet->type = ANSWER;
     fill_team(packet->team);
     packet->team_size = team_size;
     packet->src_rank = rank;

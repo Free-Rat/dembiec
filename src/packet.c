@@ -1,5 +1,7 @@
 #include "../lib/main.h"
 #include "../lib/packet.h"
+#include "../lib/queries.h"
+
 MPI_Datatype MPI_PACKET_T;
 
 struct tagNames_t{
@@ -145,8 +147,12 @@ packet_t *getMessage(int from, MPI_Status* status)
 void handlePacket(packet_t* packet) {
     switch (packet->type) {
         case REQUEST:
-            println("Otrzymałem prośbę o sekcję krytyczną od %d", packet->src_rank);
+            println("Otrzymałem prośbę od %d", packet->src_rank);
+			sendPacket(getp_ans(), packet->src_rank, ANSWER);
             break;
+		case ANSWER:
+			println("Otrzymałem odpowiedź od %d", packet->src_rank);
+			break;
         default:
             break;
     }

@@ -5,4 +5,6 @@
 
 packet_t* getp_req();
 
+packet_t* getp_ans();
+
 #endif

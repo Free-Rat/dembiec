@@ -7,5 +7,6 @@
 /* Typy wiadomości */
 /* TYPY PAKIETÓW */
 #define REQUEST 1
+#define ANSWER 2
 
 #endif

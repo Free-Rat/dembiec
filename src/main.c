@@ -31,11 +31,14 @@ int main(int argc, char **argv)
         if (is_leader && rank != size - 1) {
             get_next_query();
             sendPacket(getp_req(), next_query, REQUEST);
+            if (rank != 0) {
+                packet_t* packet = getMessage(next_query, &status);
+                handlePacket(packet);
+            }
         }
-        if (rank != 0) {
-            packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
-            handlePacket(packet);
-        }        
+
+        packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
+        handlePacket(packet);
     }
 
     //while (1)
