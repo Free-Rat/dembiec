@@ -18,6 +18,7 @@
 #define ROOT 0
 
 /* tutaj TYLKO zapowiedzi - definicje w main.c */
+extern MPI_Status status;
 extern int rank, size;
 extern int next_query;
 extern int is_leader;
@@ -25,9 +26,12 @@ extern int team[TEAM_SIZE];
 extern int team_size;
 extern int in_dembiec;
 extern int leader;
-extern int dead_list[TEAM_SIZE];
+extern int* dead_list;
+extern int hp;
 
 void print_team();
+
+int in_team(int rank_check);
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano

@@ -1,6 +1,7 @@
 #include "../lib/main.h"
 #include "../lib/packet.h"
 #include "../lib/queries.h"
+#include "../lib/dembiec.h"
 
 MPI_Datatype MPI_PACKET_T;
 
@@ -167,6 +168,19 @@ void sendTeamPacket(packet_t* packet, int tag) {
 	free(packet);
 }
 
+void leave_team() {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		if (team[i] == rank) {
+			team[i] = -1;
+			team_size--;
+			sort(team);
+			break;
+		}
+	}
+
+	sendTeamPacket(getp_update(), UPDATE);
+}
+
 void try_go_dembiec() {
 	if (team_size >= TEAM_SIZE) {
 		in_dembiec = 1;
@@ -211,7 +225,7 @@ void handlePacket(packet_t* packet) {
 			break;
 
 		case UPDATE:
-			if (packet->src_rank == leader) {
+			if (in_team(packet->src_rank)) {
 				replace_team(packet->team);
 				update_leader();
 				//print_team();
@@ -221,6 +235,7 @@ void handlePacket(packet_t* packet) {
 		case GO_DEMBIEC:
 			in_dembiec = 1;
 			println("Lecim na dembiec!");
+			fun_in_dembiec();
 			break;
         default:
             break;

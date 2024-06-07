@@ -5,13 +5,17 @@ int rank, size;
 int next_query = 0;
 int is_leader = 1;
 int leader = 0;
-int team[TEAM_SIZE] = {-1, -1, -1, -1, -1};
+int team[TEAM_SIZE];
 int team_size = 1;
 
 int in_dembiec = 0;
-int dead_list[TEAM_SIZE] = {0, 0, 0, 0 ,0};
+int* dead_list;
+int hp = 100;
 
 int all_dead = 0;
+
+MPI_Status status;
+
 
 void get_next_query() {
     next_query++;
@@ -65,9 +69,14 @@ void print_team() {
     printf("\n");
 }
 
+void fill_tab(int* tab, int s, int val) {
+    for (int i = 0; i < s; i++) {
+        tab[i] = val;
+    }
+}
+
 int main(int argc, char **argv)
 {
-    MPI_Status status;
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     srand(rank);
@@ -75,7 +84,10 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    dead_list = (int*)malloc(size * sizeof(int));
+    fill_tab(dead_list, size, 0);
     next_query = rank;
+    fill_tab(team, TEAM_SIZE, -1);
     team[0] = rank;
     leader = rank;
 
