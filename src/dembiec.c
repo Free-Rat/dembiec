@@ -6,9 +6,10 @@ void fun_in_dembiec() {
     while (1) {
         if (rand() % 100 == 0) {
             hp -= 10;
-            sleep(10000);
+            sleep(1);
             leave_team();
             in_dembiec = 0;
+            println("Ała pobili mnie...");
 
             if (hp <= 0) {
                 dead_list[rank] = 1;
@@ -16,7 +17,7 @@ void fun_in_dembiec() {
             break;
         }
 
-        sleep(1000);
+        sleep(1);
         int number_amount;
 		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		MPI_Get_count(&status, MPI_PACKET_T, &number_amount);

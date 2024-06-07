@@ -23,6 +23,9 @@ packet_t* getMessage(int from, MPI_Status* status);
 
 void leave_team();
 
+void fun_in_dembiec();
+
+
 void handlePacket(packet_t* packet);
 
 typedef enum {InRun, InMonitor, InWant, InSection, InFinish} state_t;

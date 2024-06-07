@@ -1,5 +1,6 @@
 #include "../lib/main.h"
 #include "../lib/queries.h"
+#include "../lib/dembiec.h"
 
 int rank, size;
 int next_query = 0;
@@ -39,12 +40,17 @@ int try_next() {
     get_next_query();
 
     int checked = 0;
-    while ((checked <= size && dead_list[next_query] == 1) || in_team(next_query)) {
+    while (in_team(next_query)) {
+        //println("Cannot go to %d", next_query);
         get_next_query();
         checked++;
+
+        if (checked >= size) {
+            break;
+        }
     }
 
-    if (checked <= size) {
+    if (checked < size) {
         return 1;
     }
     
@@ -97,14 +103,21 @@ int main(int argc, char **argv)
     //print_team();
 
     while (1) {
+        print_team();
+
+        if (team_size == TEAM_SIZE) {
+            println("Lecim na dembiec!");
+            in_dembiec = 1;
+            fun_in_dembiec();
+        }
+
         if (is_leader && rank != size - 1) {
-            if (!try_next()) {
-                break;
-            }
-            sendPacket(getp_req(), next_query, REQUEST, 1);
-            if (rank != 0) {
-                packet_t* packet = getMessage(next_query, &status);
-                handlePacket(packet);
+            if (try_next()) {
+                sendPacket(getp_req(), next_query, REQUEST, 1);
+                if (rank != 0) {
+                    packet_t* packet = getMessage(next_query, &status);
+                    handlePacket(packet);
+                }
             }
         }
 

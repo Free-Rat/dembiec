@@ -11,7 +11,8 @@ struct tagNames_t{
 } tagNames[] = { 
     { "prośbę o dołączenie do grupy", REQUEST },
 	{ "odpowiedź na dołączenie do grupy", ANSWER },
-	{ "aktualizację grupy", UPDATE }
+	{ "aktualizację grupy", UPDATE },
+	{ "informacje o pójściu na dembiec", GO_DEMBIEC }
 };
 
 const char *const tag2string( int tag )
@@ -52,9 +53,17 @@ void sendPacket(packet_t *pkt, int destination, int tag, int free_here)
 	}
 }
 
-void replace_team(int* new_team) {
+void replace_team(int* new_team, int packet_team_size) {
 	for (int i = 0; i < TEAM_SIZE; i++) {
 		team[i] = new_team[i];
+	}
+
+	team_size = packet_team_size;
+}
+
+void copy_team(int* original, int* copy) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		copy[i] = original[i];
 	}
 }
 
@@ -124,7 +133,7 @@ int* merge(int* group1, int* group2) {
 			break;
 		}
 		result[k] = group1[i];
-		printf("result[%d] = %d\n", k, result[k]);
+		//printf("result[%d] = %d\n", k, result[k]);
 		i++;
 		k++;
 	}
@@ -134,7 +143,7 @@ int* merge(int* group1, int* group2) {
 			break;
 		}
 		result[k] = group2[j];
-		printf("result[%d] = %d\n", k, result[k]);
+		//printf("result[%d] = %d\n", k, result[k]);
 		j++;
 		k++;
 	}
@@ -215,11 +224,12 @@ void team_merge(int* rec_team, int rec_team_size) {
 	rec_team = trim(rec_team, rec_team_size, team_size);
 
 	int* new_team = merge(team, rec_team);
-	replace_team(new_team);
 	team_size += rec_team_size;
-	if (team_size > TEAM_SIZE) {
+	replace_team(new_team, team_size);
+	if (team_size >= TEAM_SIZE) {
 		team_size = TEAM_SIZE;
 	}
+	sort(team);
 	update_leader();
 
 	free(new_team);
@@ -268,10 +278,20 @@ void handlePacket(packet_t* packet) {
 			}
 			if (!in_dembiec) {
 				if (is_leader) {
+					int team_copy[TEAM_SIZE];
+					copy_team(team, team_copy);
 					team_merge(packet->team, packet->team_size);
 					sendPacket(getp_ans(OK), packet->src_rank, ANSWER, 1);
 					sendTeamPacket(getp_update(), UPDATE);
-					try_go_dembiec();
+					for (int i = 0; i < TEAM_SIZE; i++) {
+						if (team_copy[i] < 0 ) {
+							break;
+						}
+						sendPacket(getp_update(), team_copy[i], UPDATE, 1);
+					}
+					print_team();
+					println("team size: %d", team_size);
+					//try_go_dembiec();
 				}
 				else {
 					sendPacket(getp_ans(NOT_LEADER), packet->src_rank, ANSWER, 1);
@@ -285,7 +305,11 @@ void handlePacket(packet_t* packet) {
 			println("Otrzymałem odpowiedź od %d", packet->src_rank);
 			switch (packet->answer) {
 				case OK:
-					team_merge(packet->team, packet->team_size);
+					if (in_team(packet->src_rank)) {
+						break;
+					}
+					replace_team(packet->team, packet->team_size);
+					update_leader();
 					println("Połączono z %d", packet->src_rank);
 					//print_team();
 					break;
@@ -299,17 +323,17 @@ void handlePacket(packet_t* packet) {
 			break;
 
 		case UPDATE:
-			if (in_team(packet->src_rank)) {
-				replace_team(packet->team);
+			//if (in_team(packet->src_rank)) {
+				replace_team(packet->team, packet->team_size);
 				update_leader();
 				//print_team();
-			}
+			//}
 			break;
 
 		case GO_DEMBIEC:
-			in_dembiec = 1;
-			println("Lecim na dembiec!");
-			fun_in_dembiec();
+			//in_dembiec = 1;
+			//println("Lecim na dembiec!");
+			//fun_in_dembiec();
 			break;
         default:
             break;
