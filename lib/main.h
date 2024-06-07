@@ -32,6 +32,7 @@ extern int hp;
 void print_team();
 
 int in_team(int rank_check);
+void fill_tab(int* tab, int s, int val);
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano

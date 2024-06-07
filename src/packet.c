@@ -80,8 +80,8 @@ void validate_team(int* team) {
 int* merge(int* group1, int* group2) {
 	// validate_team(group1);
 	// validate_team(group2);
-	printteam(group1);
-	printteam(group2);
+	//printteam(group1);
+	//printteam(group2);
 	// int* result = (int*)malloc(TEAM_SIZE * sizeof(int));
 	// int i = 0;
 	// int j = 0;
@@ -242,6 +242,7 @@ void leave_team() {
 	}
 
 	sendTeamPacket(getp_update(), UPDATE);
+	fill_tab(team, TEAM_SIZE, -1);
 }
 
 void try_go_dembiec() {
