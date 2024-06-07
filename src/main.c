@@ -39,7 +39,7 @@ int try_next() {
     get_next_query();
 
     int checked = 0;
-    while (checked <= size && dead_list[next_query] == 1 && in_team(next_query)) {
+    while ((checked <= size && dead_list[next_query] == 1) || in_team(next_query)) {
         get_next_query();
         checked++;
     }
@@ -89,6 +89,9 @@ int main(int argc, char **argv)
     next_query = rank;
     fill_tab(team, TEAM_SIZE, -1);
     team[0] = rank;
+	for (int i = 1; i < TEAM_SIZE; i++) {
+		team[i] = -1;
+	}
     leader = rank;
 
     //print_team();

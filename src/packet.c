@@ -17,7 +17,9 @@ struct tagNames_t{
 const char *const tag2string( int tag )
 {
     for (int i=0; i <sizeof(tagNames)/sizeof(struct tagNames_t);i++) {
-	if ( tagNames[i].tag == tag )  return tagNames[i].name;
+		if ( tagNames[i].tag == tag ) {
+			return tagNames[i].name;
+		}
     }
     return "<unknown>";
 }
@@ -60,37 +62,89 @@ void replace_team(int* new_team) {
 // zarządzanie ekipami
 // ======================================================================
 
+void printteam(int* team) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		printf("team[%d] = %d\n", i, team[i]);
+	}
+}
+
+void validate_team(int* team) {
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		if (team[i] >= size) {
+			println("Błąd w teamie");
+			printteam(team);
+		}
+	}
+}
+
 int* merge(int* group1, int* group2) {
+	// validate_team(group1);
+	// validate_team(group2);
+	printteam(group1);
+	printteam(group2);
+	// int* result = (int*)malloc(TEAM_SIZE * sizeof(int));
+	// int i = 0;
+	// int j = 0;
+	// int k = 0;
+	// while (group1[i] != -1 && group2[j] != -1) {
+	// 	if (group1[i] < group2[j]) {
+	// 		result[k] = group1[i];
+	// 		i++;
+	// 	} else {
+	// 		result[k] = group2[j];
+	// 		j++;
+	// 	}
+	// 	k++;
+	// }
+	// while (group1[i] != -1) {
+	// 	result[k] = group1[i];
+	// 	i++;
+	// 	k++;
+	// 	if (i == TEAM_SIZE) {
+	// 		break;
+	// 	}
+	// }
+	// while (group2[j] != -1) {
+	// 	result[k] = group2[j];
+	// 	j++;
+	// 	k++;
+	// 	if (j == TEAM_SIZE) {
+	// 		break;
+	// 	}
+	// }
+	// validate_team(result);
+	
 	int* result = (int*)malloc(TEAM_SIZE * sizeof(int));
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	while (group1[i] != -1 && group2[j] != -1) {
-		if (group1[i] < group2[j]) {
-			result[k] = group1[i];
-			i++;
-		} else {
-			result[k] = group2[j];
-			j++;
-		}
-		k++;
-	}
+
 	while (group1[i] != -1) {
+		if (k == TEAM_SIZE || i == TEAM_SIZE) {
+			break;
+		}
 		result[k] = group1[i];
+		printf("result[%d] = %d\n", k, result[k]);
 		i++;
 		k++;
-		if (i == TEAM_SIZE) {
+	}
+
+	while (group2[j] != -1) {
+		if (k == TEAM_SIZE || i == TEAM_SIZE) {
 			break;
 		}
-	}
-	while (group2[j] != -1) {
 		result[k] = group2[j];
+		printf("result[%d] = %d\n", k, result[k]);
 		j++;
 		k++;
-		if (j == TEAM_SIZE) {
-			break;
-		}
 	}
+
+	while (k < TEAM_SIZE) {
+		result[k] = -1;
+		k++;
+	}
+
+	// print_team(result);
 	return result;
 }
 
@@ -115,6 +169,7 @@ void sort(int* tab) {
 }
 
 int* trim(int* g1, int len_g1, int len_g2) {
+	// print_team(g1);
 	if (len_g1 + len_g2 < TEAM_SIZE) {
 		return g1;
 	}
@@ -125,6 +180,7 @@ int* trim(int* g1, int len_g1, int len_g2) {
 	for (int i = TEAM_SIZE - len_g2; i < TEAM_SIZE; i++) {
 		wynik[i] = -1;
 	}
+	// print_team(wynik);
 	return wynik;
 }
 
@@ -146,9 +202,14 @@ void update_leader() {
 }
 
 void team_merge(int* rec_team, int rec_team_size) {
+
+	sort(team);
+	sort(rec_team);
+
+	rec_team = trim(rec_team, rec_team_size, team_size);
+
 	int* new_team = merge(team, rec_team);
 	replace_team(new_team);
-	sort(team);
 	team_size += rec_team_size;
 	if (team_size > TEAM_SIZE) {
 		team_size = TEAM_SIZE;
@@ -160,7 +221,9 @@ void team_merge(int* rec_team, int rec_team_size) {
 
 void sendTeamPacket(packet_t* packet, int tag) {
 	for (int i = 0; i < TEAM_SIZE; i++) {
-		if (team[i] != -1 && team[i] != rank) {
+		// print_team(team);
+		if (team[i] > -1 && team[i] != rank) {
+			// println("Wysyłam %s do team:%d", tag2string(tag), team[i]);
 			sendPacket(packet, team[i], tag, 0);
 		}
 	}
