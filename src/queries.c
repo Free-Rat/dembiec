@@ -40,3 +40,14 @@ packet_t* getp_update() {
 
     return packet;
 }
+
+packet_t* getp_gogo() {
+    packet_t* packet = (packet_t*)malloc(sizeof(packet_t));
+    packet->type = GO_DEMBIEC;
+    fill_team(packet->team);
+    packet->team_size = team_size;
+    packet->src_rank = rank;
+    packet->leader_rank = leader;
+
+    return packet;
+}

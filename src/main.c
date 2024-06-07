@@ -5,11 +5,11 @@ int rank, size;
 int next_query = 0;
 int is_leader = 1;
 int leader = 0;
-int team[TEAM_SIZE] = {-1};
+int team[TEAM_SIZE] = {-1, -1, -1, -1, -1};
 int team_size = 1;
 
 int in_dembiec = 0;
-int dead_list[TEAM_SIZE] = {0};
+int dead_list[TEAM_SIZE] = {0, 0, 0, 0 ,0};
 
 int all_dead = 0;
 
@@ -21,11 +21,21 @@ void get_next_query() {
     }
 }
 
+int in_team(int rank_check) {
+    for (int i = 0; i < TEAM_SIZE; i++) {
+        if (team[i] == rank_check) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int try_next() {
     get_next_query();
-    
+
     int checked = 0;
-    while (checked <= size && dead_list[next_query] == 1) {
+    while (checked <= size && dead_list[next_query] == 1 && in_team(next_query)) {
         get_next_query();
         checked++;
     }
@@ -47,6 +57,14 @@ int are_all_dead() {
     return 1;
 }
 
+void print_team() {
+    printnoln("Aktualna drużyna: ");
+    for (int i = 0; i < TEAM_SIZE; i++) {
+        printnoln("%d ", team[i]);
+    }
+    printf("\n");
+}
+
 int main(int argc, char **argv)
 {
     MPI_Status status;
@@ -60,6 +78,8 @@ int main(int argc, char **argv)
     next_query = rank;
     team[0] = rank;
     leader = rank;
+
+    //print_team();
 
     while (1) {
         if (is_leader && rank != size - 1) {

@@ -8,7 +8,9 @@ struct tagNames_t{
     const char *name;
     int tag;
 } tagNames[] = { 
-    { "prośbę o sekcję krytyczną", REQUEST }, 
+    { "prośbę o dołączenie do grupy", REQUEST },
+	{ "odpowiedź na dołączenie do grupy", ANSWER },
+	{ "aktualizację grupy", UPDATE }
 };
 
 const char *const tag2string( int tag )
@@ -40,10 +42,11 @@ void packet_init()
 void sendPacket(packet_t *pkt, int destination, int tag, int free_here)
 {
     pkt->src_rank = rank;
+	println("Wysyłam %s do %d\n", tag2string(tag), destination);
     MPI_Send(pkt, 1, MPI_PACKET_T, destination, tag, MPI_COMM_WORLD);
-    println("Wysyłam %s do %d\n", tag2string(tag), destination);
-    if (free_here) 
+    if (free_here) {
         free(pkt);
+	}
 }
 
 void replace_team(int* new_team) {
@@ -141,16 +144,20 @@ void update_leader() {
 	}
 }
 
-void team_merge(int* rec_team) {
+void team_merge(int* rec_team, int rec_team_size) {
 	int* new_team = merge(team, rec_team);
 	replace_team(new_team);
 	sort(team);
+	team_size += rec_team_size;
+	if (team_size > TEAM_SIZE) {
+		team_size = TEAM_SIZE;
+	}
 	update_leader();
 
 	free(new_team);
 }
 
-void sendTeamPacket(packet_t* packet, int destination, int tag) {
+void sendTeamPacket(packet_t* packet, int tag) {
 	for (int i = 0; i < TEAM_SIZE; i++) {
 		if (team[i] != -1 && team[i] != rank) {
 			sendPacket(packet, team[i], tag, 0);
@@ -160,15 +167,23 @@ void sendTeamPacket(packet_t* packet, int destination, int tag) {
 	free(packet);
 }
 
+void try_go_dembiec() {
+	if (team_size >= TEAM_SIZE) {
+		in_dembiec = 1;
+		sendTeamPacket(getp_gogo(), GO_DEMBIEC);
+	}
+}
+
 void handlePacket(packet_t* packet) {
     switch (packet->type) {
         case REQUEST:
             println("Otrzymałem prośbę od %d", packet->src_rank);
 			if (!in_dembiec) {
 				if (is_leader) {
-					team_merge(packet->team);
+					team_merge(packet->team, packet->team_size);
 					sendPacket(getp_ans(OK), packet->src_rank, ANSWER, 1);
-					sendTeamPacket(getp_update(), packet->src_rank, UPDATE);
+					sendTeamPacket(getp_update(), UPDATE);
+					try_go_dembiec();
 				}
 				else {
 					sendPacket(getp_ans(NOT_LEADER), packet->src_rank, ANSWER, 1);
@@ -182,8 +197,9 @@ void handlePacket(packet_t* packet) {
 			println("Otrzymałem odpowiedź od %d", packet->src_rank);
 			switch (packet->answer) {
 				case OK:
-					team_merge(packet->team);
+					team_merge(packet->team, packet->team_size);
 					println("Połączono z %d", packet->src_rank);
+					//print_team();
 					break;
 				case NOT_LEADER:
 					next_query = packet->leader_rank - 1;
@@ -198,7 +214,14 @@ void handlePacket(packet_t* packet) {
 			if (packet->src_rank == leader) {
 				replace_team(packet->team);
 				update_leader();
+				//print_team();
 			}
+			break;
+
+		case GO_DEMBIEC:
+			in_dembiec = 1;
+			println("Lecim na dembiec!");
+			break;
         default:
             break;
     }
