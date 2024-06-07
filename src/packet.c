@@ -196,6 +196,12 @@ void update_leader() {
 	for (int i = 0; i < TEAM_SIZE; i++) {
 		if (team[i] != -1) {
 			leader = team[i];
+			if (leader == rank) {
+				is_leader = 1;
+			}
+			else {
+				is_leader = 0;
+			}
 			break;
 		}
 	}
