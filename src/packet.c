@@ -192,6 +192,10 @@ void handlePacket(packet_t* packet) {
     switch (packet->type) {
         case REQUEST:
             println("Otrzymałem prośbę od %d", packet->src_rank);
+			if (dead_list[rank]) {
+				sendPacket(getp_ans(DEAD), packet->src_rank, ANSWER, 1);
+				break;
+			}
 			if (!in_dembiec) {
 				if (is_leader) {
 					team_merge(packet->team, packet->team_size);
