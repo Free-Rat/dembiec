@@ -249,17 +249,19 @@ void sendTeamPacket(packet_t* packet, int tag) {
 }
 
 void leave_team() {
-	for (int i = 0; i < TEAM_SIZE; i++) {
-		if (team[i] == rank) {
-			team[i] = -1;
-			team_size--;
-			sort(team);
-			break;
-		}
-	}
+	// for (int i = 0; i < TEAM_SIZE; i++) {
+	// 	if (team[i] == rank) {
+	// 		team[i] = -1;
+	// 		team_size--;
+	// 		sort(team);
+	// 		break;
+	// 	}
+	// }
 
-	sendTeamPacket(getp_update(), UPDATE);
+	// sendTeamPacket(getp_update(), UPDATE);
 	fill_tab(team, TEAM_SIZE, -1);
+	team[0] = rank;
+	team_size = 1;
 }
 
 void try_go_dembiec() {
