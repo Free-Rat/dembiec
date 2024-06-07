@@ -39,7 +39,7 @@ int try_next() {
     get_next_query();
 
     int checked = 0;
-    while (checked <= size && dead_list[next_query] == 1 && in_team(next_query)) {
+    while ((checked <= size && dead_list[next_query] == 1) || in_team(next_query)) {
         get_next_query();
         checked++;
     }
