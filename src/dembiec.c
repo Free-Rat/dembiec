@@ -6,10 +6,9 @@ void fun_in_dembiec() {
     leave_team();
     while (1) {
         if (rand() % 100 < 50) {
-            hp -= 10;
+            hp -= 100;
             sleep(1);
             //leave_team();
-            in_dembiec = 0;
             println("Ała pobili mnie... Moje hp: %d", hp);
 
             if (hp <= 0) {
@@ -28,4 +27,5 @@ void fun_in_dembiec() {
 			handlePacket(packet);
 		}
     }
+    in_dembiec = 0;
 }

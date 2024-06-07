@@ -33,6 +33,7 @@ void print_team();
 
 int in_team(int rank_check);
 void fill_tab(int* tab, int s, int val);
+int are_all_dead();
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano

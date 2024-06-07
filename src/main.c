@@ -15,6 +15,8 @@ int hp = 100;
 
 int all_dead = 0;
 
+int lastAsked;
+
 MPI_Status status;
 
 
@@ -40,7 +42,7 @@ int try_next() {
     get_next_query();
 
     int checked = 0;
-    while (in_team(next_query)) {
+    while (in_team(next_query) || dead_list[next_query] ||  next_query == lastAsked) {
         //println("Cannot go to %d", next_query);
         get_next_query();
         checked++;
@@ -59,11 +61,12 @@ int try_next() {
 
 int are_all_dead() {
     int death_count = 0;
-    for (int i = 0; i < TEAM_SIZE; i++) {
+    for (int i = 0; i < size; i++) {
         if (dead_list[i] == 1) {
             dead_list++;
         }
     }
+    println("martwych jest: %d", death_count);
     if (size - death_count <= TEAM_SIZE) {
         return 1;
     }
@@ -84,6 +87,7 @@ void fill_tab(int* tab, int s, int val) {
         tab[i] = val;
     }
 }
+
 
 int main(int argc, char **argv)
 {
@@ -109,26 +113,27 @@ int main(int argc, char **argv)
     while (1) {
         print_team();
 
-
-        if (are_all_dead()) {
-            break;
-        }
-
-        if (team_size == TEAM_SIZE) {
+        if (team_size == TEAM_SIZE  && !dead_list[rank]) {
             println("Lecim na dembiec!");
             in_dembiec = 1;
             fun_in_dembiec();
         }
 
+        if (are_all_dead()) {
+            break;
+        }
+
         if (is_leader && rank != size - 1 && dead_list[rank] == 0) {
             if (try_next()) {
                 sendPacket(getp_req(), next_query, REQUEST, 1);
+                lastAsked = next_query;
                 packet_t* packet = getMessage(next_query, &status);
                 handlePacket(packet);
             }
         }
 
         if (rank != 0) {
+
             int number_amount;
             MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             MPI_Get_count(&status, MPI_PACKET_T, &number_amount);

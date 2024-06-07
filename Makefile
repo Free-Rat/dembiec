@@ -14,4 +14,4 @@ clean:
 	rm main a.out
 
 run: main Makefile
-	mpirun -oversubscribe -np 8 ./build/main
+	mpirun -oversubscribe -np 20 ./build/main

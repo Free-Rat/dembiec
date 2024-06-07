@@ -284,14 +284,14 @@ void try_go_dembiec() {
 }
 
 void handlePacket(packet_t* packet) {
+	if (dead_list[rank]) {
+		sendPacket(getp_ans(DEAD), packet->src_rank, ANSWER, 1);
+		println("W grobie leże i z za światów odpowiadam %d", packet->src_rank);
+		return;
+	}
     switch (packet->type) {
         case REQUEST:
             println("Otrzymałem prośbę od %d", packet->src_rank);
-			if (dead_list[rank]) {
-				sendPacket(getp_ans(DEAD), packet->src_rank, ANSWER, 1);
-				println("W grobie leże i z za światów odpowiadam %d", packet->src_rank);
-				break;
-			}
 			if (!in_dembiec) {
 				if (is_leader) {
 					int team_copy[TEAM_SIZE];
@@ -334,7 +334,9 @@ void handlePacket(packet_t* packet) {
 					next_query = packet->leader_rank - 1;
 					break;
 				case DEAD:
+					println("Uznaje twoją śmierć");
 					dead_list[packet->src_rank] = 1;
+					are_all_dead();
 					break;
 			}
 			break;
