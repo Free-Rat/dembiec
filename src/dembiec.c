@@ -9,6 +9,10 @@ void fun_in_dembiec() {
             sleep(10000);
             leave_team();
             in_dembiec = 0;
+
+            if (hp <= 0) {
+                dead_list[rank] = 1;
+            }
             break;
         }
 
