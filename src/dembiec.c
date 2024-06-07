@@ -4,12 +4,12 @@
 
 void fun_in_dembiec() {
     while (1) {
-        if (rand() % 100 == 0) {
+        if (rand() % 100 < 50) {
             hp -= 10;
             sleep(1);
             leave_team();
             in_dembiec = 0;
-            println("Ała pobili mnie...");
+            println("Ała pobili mnie... Moje hp: %d", hp);
 
             if (hp <= 0) {
                 dead_list[rank] = 1;

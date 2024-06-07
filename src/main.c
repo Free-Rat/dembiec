@@ -58,13 +58,17 @@ int try_next() {
 }
 
 int are_all_dead() {
+    int death_count = 0;
     for (int i = 0; i < TEAM_SIZE; i++) {
-        if (dead_list[i] == 0) {
-            return 0;
+        if (dead_list[i] == 1) {
+            dead_list++;
         }
     }
+    if (size - death_count <= TEAM_SIZE) {
+        return 1;
+    }
 
-    return 1;
+    return 0;
 }
 
 void print_team() {
@@ -105,13 +109,18 @@ int main(int argc, char **argv)
     while (1) {
         print_team();
 
+
+        if (are_all_dead()) {
+            break;
+        }
+
         if (team_size == TEAM_SIZE) {
             println("Lecim na dembiec!");
             in_dembiec = 1;
             fun_in_dembiec();
         }
 
-        if (is_leader && rank != size - 1) {
+        if (is_leader && rank != size - 1 && dead_list[rank] == 0) {
             if (try_next()) {
                 sendPacket(getp_req(), next_query, REQUEST, 1);
                 if (rank != 0) {
@@ -130,9 +139,6 @@ int main(int argc, char **argv)
 			handlePacket(packet);
 		}
 
-        if (are_all_dead()) {
-            break;
-        }
     }
 
     println("Wszyscy są martwi, kończę działanie...");

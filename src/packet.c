@@ -12,7 +12,8 @@ struct tagNames_t{
     { "prośbę o dołączenie do grupy", REQUEST },
 	{ "odpowiedź na dołączenie do grupy", ANSWER },
 	{ "aktualizację grupy", UPDATE },
-	{ "informacje o pójściu na dembiec", GO_DEMBIEC }
+	{ "informacje o pójściu na dembiec", GO_DEMBIEC },
+	{ "nie moge gadać", IN_DEMBIEC }
 };
 
 const char *const tag2string( int tag )
@@ -274,6 +275,7 @@ void handlePacket(packet_t* packet) {
             println("Otrzymałem prośbę od %d", packet->src_rank);
 			if (dead_list[rank]) {
 				sendPacket(getp_ans(DEAD), packet->src_rank, ANSWER, 1);
+				println("W grobie leże i z za światów odpowiadam %d", packet->src_rank);
 				break;
 			}
 			if (!in_dembiec) {
@@ -298,7 +300,8 @@ void handlePacket(packet_t* packet) {
 				}
 			}
 			else {
-				sendPacket(getp_ans(AWAY), packet->src_rank, ANSWER, 1);
+				println("Nie mogę gadać biję się");
+				sendPacket(getp_ans(AWAY), packet->src_rank, IN_DEMBIEC, 1);
 			}
             break;
 		case ANSWER:
