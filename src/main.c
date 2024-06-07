@@ -123,22 +123,21 @@ int main(int argc, char **argv)
         if (is_leader && rank != size - 1 && dead_list[rank] == 0) {
             if (try_next()) {
                 sendPacket(getp_req(), next_query, REQUEST, 1);
-                if (rank != 0) {
-                    packet_t* packet = getMessage(next_query, &status);
-                    handlePacket(packet);
-                }
+                packet_t* packet = getMessage(next_query, &status);
+                handlePacket(packet);
             }
         }
 
-		int number_amount;
-		MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		MPI_Get_count(&status, MPI_PACKET_T, &number_amount);
+        if (rank != 0) {
+            int number_amount;
+            MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Get_count(&status, MPI_PACKET_T, &number_amount);
 
-		for (int i = 0; i < number_amount; i++) {
-			packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
-			handlePacket(packet);
-		}
-
+            for (int i = 0; i < number_amount; i++) {
+                packet_t* packet = getMessage(MPI_ANY_SOURCE, &status);
+                handlePacket(packet);
+            }
+        }
     }
 
     println("Wszyscy są martwi, kończę działanie...");

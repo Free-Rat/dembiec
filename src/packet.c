@@ -60,6 +60,18 @@ void replace_team(int* new_team, int packet_team_size) {
 	}
 
 	team_size = packet_team_size;
+
+	int in = 0;
+	for (int i = 0; i < TEAM_SIZE; i++) {
+		if (team[i] == rank) {
+			in = 1;
+			break;
+		}
+	}
+
+	if (!in) {
+		leave_team();
+	}
 }
 
 void copy_team(int* original, int* copy) {
